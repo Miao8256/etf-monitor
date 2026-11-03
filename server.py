@@ -10,12 +10,13 @@ NAMES=['沪深300华泰柏瑞','沪深300易方达','沪深300嘉实','上证50�
 CACHE={'at':0,'payload':None}
 
 def get_one(code):
-    market='1' if code.startswith(('5','6')) else '0'
+    market='1' if code=='000001' or code.startswith(('5','6')) else '0'
     params={'fields1':'f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13','fields2':'f51,f52,f53,f54,f55,f56,f57,f58','ut':'7eea3edcaed734bea9cbfc24409ed989','ndays':'5','iscr':'0','secid':f'{market}.{code}'}
     url='https://push2his.eastmoney.com/api/qt/stock/trends2/get?'+urlencode(params)
     req=Request(url,headers={'User-Agent':'Mozilla/5.0','Referer':'https://quote.eastmoney.com/'})
     with urlopen(req,timeout=9) as r: raw=json.load(r)
     d=raw.get('data') or {}
+    if not d.get('trends'): raise ValueError('行情接口未返回分钟数据')
     return {'code':code,'name':NAMES[CODES.index(code)] if code in CODES else '上证指数','trends':d.get('trends') or [],'preClose':d.get('preClose')}
 
 class Handler(SimpleHTTPRequestHandler):
